@@ -10,7 +10,9 @@ import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
 
-@asset
+@asset(
+    group_name="btc_hashrate"
+)
 def btc_hashrate_file(context: AssetExecutionContext, gcs:GCSResource): 
     """
         The raw parquet file for daily bitcoin hashrate
@@ -45,7 +47,8 @@ def btc_hashrate_file(context: AssetExecutionContext, gcs:GCSResource):
     blob.upload_from_filename(constants.LOCAL_HASHRATE_FILE_PATH)
 
 @asset(
-    deps=["btc_hashrate_file"]
+    deps=["btc_hashrate_file"],
+    group_name="btc_hashrate"
 )
 def btc_hashrate_staging(bq:BigQueryResource):
     """
@@ -63,7 +66,8 @@ def btc_hashrate_staging(bq:BigQueryResource):
         bq_client.query(query)
 
 @asset(
-    deps=["btc_hashrate_staging"]
+    deps=["btc_hashrate_staging"],
+    group_name="btc_hashrate"
 )
 def btc_hashrate(bq:BigQueryResource):
     """
