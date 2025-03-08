@@ -1,6 +1,5 @@
-
 import dagster as dg
-from ..assets import constants
+from assets import constants
 
 start_date = constants.START_DATE
 end_date = "2025-02-28"

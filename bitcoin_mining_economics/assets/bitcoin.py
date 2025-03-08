@@ -1,14 +1,14 @@
 from dagster import asset, AssetExecutionContext
 from dagster_gcp import GCSResource, BigQueryResource
-from . import constants
-from ..partitions import monthly_partition
+from dagster import EnvVar
+
+from assets import constants
+from partitions import monthly_partition
+
 import requests
 from datetime import datetime
-import os 
 import logging 
 import pandas as pd
-from dotenv import load_dotenv
-load_dotenv()
 
 @asset(
     group_name="btc_hashrate"
@@ -42,7 +42,8 @@ def btc_hashrate_file(context: AssetExecutionContext, gcs:GCSResource):
     )
 
     gcs_client = gcs.get_client()
-    bucket = gcs_client.bucket(os.getenv("BITCOIN_MINING_BUCKET_NAME"))
+    bucket = gcs_client.bucket(EnvVar("BITCOIN_MINING_BUCKET_NAME").get_value())
+    
     blob = bucket.blob(constants.GCS_HASHRATE_TEMPLATE_FILE_PATH.format(datetime.now().strftime("%Y-%m-%d")))
     blob.upload_from_filename(constants.LOCAL_HASHRATE_FILE_PATH)
 
@@ -55,10 +56,10 @@ def btc_hashrate_staging(bq:BigQueryResource):
         The staging dataset for daily bitcoin hashrate
     """
     query = f"""
-        create or replace external table {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
+        create or replace external table {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
         options (
             format="PARQUET",
-            uris=["gs://{os.getenv("BITCOIN_MINING_BUCKET_NAME")}/{constants.GCS_HASHRATE_TEMPLATE_FILE_PATH.format(datetime.now().strftime("%Y-%m-%d"))}"]
+            uris=["gs://{EnvVar("BITCOIN_MINING_BUCKET_NAME").get_value()}/{constants.GCS_HASHRATE_TEMPLATE_FILE_PATH.format(datetime.now().strftime("%Y-%m-%d"))}"]
         )
     """
 
@@ -80,14 +81,14 @@ def btc_hashrate(bq:BigQueryResource):
 
         SET min_date = (
             SELECT MIN(DATE(time))
-            FROM {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
+            FROM {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
         );
         SET max_date = (
             SELECT MAX(DATE(time))
-            FROM {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
+            FROM {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME}
         );
 
-        create table if not exists {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME} (
+        create table if not exists {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME} (
             `asset` string, 
             `date` date,
             `HashRate` float64,
@@ -99,14 +100,14 @@ def btc_hashrate(bq:BigQueryResource):
         )
         ;
 
-        delete from {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME} h
+        delete from {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME} h
             where `date` between min_date and max_date
-            and `date` IN (select extract(date from time) from {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.btc_hashrate_staging)   
+            and `date` IN (select extract(date from time) from {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.btc_hashrate_staging)   
         ;
 
-        insert into {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME}
+        insert into {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME}
             (select asset, date(`time`) as date, HashRate, created_at 
-            from {os.getenv("GCP_PROJECT_ID")}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME})
+            from {EnvVar("GCP_PROJECT_ID").get_value()}.{constants.BQ_HASHRATE_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_STAGING_TABLE_NAME})
     """
 
     with bq.get_client() as bq_client:

@@ -1,7 +1,7 @@
 [project]
 name = "bitcoin_mining_economics"
 version = "0.1.0"
-description = "Add your description here"
+description = "Monitoring bitcoin mining economics"
 readme = "README.md"
 requires-python = ">=3.9,<3.13"
 dependencies = [
@@ -10,22 +10,17 @@ dependencies = [
     "pandas==2.2.3",
     "requests==2.32.3",
     "dagster-gcp==0.26.2",
-    "dagster-duckdb==0.26.2"
-]
-
-[project.optional-dependencies]
-dev = [
-    "dagster-webserver", 
-    "pytest",
+    "dagster-duckdb==0.26.2",
+    "dagster-webserver==1.10.2",
+    "pytest==8.3.5",
+    "dagster-docker (==0.26.2)",
+    "dagster-postgres (==0.26.2)"
 ]
 
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.dagster]
 module_name = "bitcoin_mining_economics.definitions"
 code_location_name = "bitcoin_mining_economics"
-
-[tool.setuptools.packages.find]
-exclude=["bitcoin_mining_economics_tests"]
