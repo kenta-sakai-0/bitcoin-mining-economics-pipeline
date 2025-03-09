@@ -13,7 +13,7 @@ import pandas as pd
 @asset(
     group_name="btc_hashrate"
 )
-def btc_hashrate_file(context: AssetExecutionContext, gcs:GCSResource): 
+def eth_hashrate_file(context: AssetExecutionContext, gcs:GCSResource): 
     """
         The raw parquet file for daily bitcoin hashrate
     """

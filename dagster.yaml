@@ -21,6 +21,7 @@ run_launcher:
       - DAGSTER_POSTGRES_PASSWORD
       - DAGSTER_POSTGRES_DB
       - GOOGLE_APPLICATION_CREDENTIALS
+      - BITCOIN_MINING_BUCKET_NAME
     network: bitcoin_mining_economics_network
     container_kwargs:
       volumes: # Make docker client accessible to any launched containers as well
@@ -33,7 +34,7 @@ run_storage:
   class: PostgresRunStorage
   config:
     postgres_db:
-      hostname: docker_example_postgresql
+      hostname: postgresql
       username:
         env: DAGSTER_POSTGRES_USER
       password:
@@ -47,7 +48,7 @@ schedule_storage:
   class: PostgresScheduleStorage
   config:
     postgres_db:
-      hostname: docker_example_postgresql
+      hostname: postgresql
       username:
         env: DAGSTER_POSTGRES_USER
       password:
@@ -61,7 +62,7 @@ event_log_storage:
   class: PostgresEventLogStorage
   config:
     postgres_db:
-      hostname: docker_example_postgresql
+      hostname: postgresql
       username:
         env: DAGSTER_POSTGRES_USER
       password:
