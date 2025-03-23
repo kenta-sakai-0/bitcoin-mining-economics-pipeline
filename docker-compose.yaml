@@ -29,11 +29,6 @@ services:
     build:
       context: . 
       dockerfile: bitcoin_mining_economics/Dockerfile_user_code
-    develop:
-      watch:
-        - action: sync
-          path: ./bitcoin_mining_economics
-          target: /opt/dagster/app
     container_name: bitcoin_mining_economics_user_code
     image: user_code_image
     restart: always
@@ -42,11 +37,12 @@ services:
       DAGSTER_POSTGRES_PASSWORD: "postgres_password"
       DAGSTER_POSTGRES_DB: "postgres_db"
       DAGSTER_CURRENT_IMAGE: "user_code_image"
+    volumes:
+      - ./bitcoin_mining_economics:/opt/dagster/app
     networks:
       - bitcoin_mining_economics_network
     env_file:
       - .env
-  
 
   # This service runs dagster-webserver, which loads your user code from the user code container.
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
@@ -75,6 +71,7 @@ services:
     volumes: # Make docker client accessible so we can terminate containers from the webserver
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/io_manager_storage:/tmp/io_manager_storage
+      # - ./bitcoin_mining_economics:/opt/dagster/app
     networks:
       - bitcoin_mining_economics_network
     depends_on:
@@ -103,6 +100,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/io_manager_storage:/tmp/io_manager_storage
       - "c:/Users/Kenta Sakai/keys/stock-alerts-451501/dagster-service-account.json:/opt/dagster/dagster_home/dagster-service-account.json"
+      # - ./bitcoin_mining_economics:/opt/dagster/app
     networks:
       - bitcoin_mining_economics_network
     depends_on:

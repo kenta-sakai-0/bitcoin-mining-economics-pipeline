@@ -12,6 +12,9 @@ run_coordinator:
         value: "example"
         limit: 5
 
+code_servers:
+  reload_timeout: 60
+
 run_launcher:
   module: dagster_docker
   class: DockerRunLauncher
@@ -22,12 +25,15 @@ run_launcher:
       - DAGSTER_POSTGRES_DB
       - GOOGLE_APPLICATION_CREDENTIALS
       - BITCOIN_MINING_BUCKET_NAME
+      - GCP_PROJECT_ID
     network: bitcoin_mining_economics_network
     container_kwargs:
+      auto_remove: True
       volumes: # Make docker client accessible to any launched containers as well
         - /var/run/docker.sock:/var/run/docker.sock
         - /tmp/io_manager_storage:/tmp/io_manager_storage
         - "c:/Users/Kenta Sakai/keys/stock-alerts-451501/dagster-service-account.json:/opt/dagster/dagster_home/dagster-service-account.json"
+        - "c:/Users/Kenta Sakai/projects/insider-tracking/bitcoin-mining-economics-pipeline/bitcoin_mining_economics:/opt/dagster/app"
 
 run_storage:
   module: dagster_postgres.run_storage

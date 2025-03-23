@@ -14,7 +14,8 @@ dependencies = [
     "dagster-webserver==1.10.2",
     "pytest==8.3.5",
     "dagster-docker (==0.26.2)",
-    "dagster-postgres (==0.26.2)"
+    "dagster-postgres (==0.26.2)",
+    "kagglehub (>=0.3.10,<0.4.0)"
 ]
 
 [build-system]

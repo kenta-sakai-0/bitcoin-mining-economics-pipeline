@@ -1,8 +1,8 @@
 from dagster import Definitions, load_assets_from_modules
 from resources import gcs_resource, bq_resource
 
-from assets import bitcoin
-bitcoin_assets = load_assets_from_modules([bitcoin])
+from assets import hashrate, spot
+bitcoin_assets = load_assets_from_modules([hashrate, spot])
 
 from jobs import btc_hashrate_job
 all_jobs = [btc_hashrate_job]
