@@ -5,7 +5,7 @@ from dagster import EnvVar
 import os
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from google.cloud import bigquery
 
 import importlib 
@@ -17,7 +17,7 @@ importlib.reload(constants)
 )
 def btc_hashrate_file(gcs:GCSResource): 
     """
-        The raw parquet file for daily bitcoin hashrate. Uses coinmetrics API because it's free
+        The raw csv file daily bitcoin hashrate. Source: mempool.space/api/v1/mining/hashrate
     """
 
     response = requests.get("https://mempool.space/api/v1/mining/hashrate/100y")
@@ -64,3 +64,46 @@ def btc_hashrate(bq:BigQueryResource):
         load_job.result()
     
     os.remove(constants.LOCAL_HASHRATE_FILE_PATH)
+
+
+def block_reward():
+    # Start date (Bitcoin genesis block)
+    start_date = datetime(2009, 1, 3)
+    
+    # Halving dates
+    halvings = [
+        (datetime(2012, 11, 28), 25.0),
+        (datetime(2016, 7, 9), 12.5),
+        (datetime(2020, 5, 11), 6.25),
+        (datetime(2024, 4, 20), 3.125),
+        (datetime(2028, 5, 1), 1.5625)
+    ]
+    
+    # Create lists to store data
+    dates = []
+    block_rewards = []
+    
+    # Current block reward
+    current_reward = 50.0
+    
+    current_date = start_date
+    end_date = datetime.today()
+
+    while current_date < end_date:
+        # Check if we need to update block reward
+        for halving_date, new_reward in halvings:
+            if current_date >= halving_date:
+                current_reward = new_reward
+        
+        # Add to lists
+        dates.append(current_date.date())
+        block_rewards.append(current_reward)
+        
+        # Move to next day
+        current_date += timedelta(days=1)
+    
+    # Create DataFrame
+    df = pd.DataFrame({
+        'date': dates,
+        'block_reward': block_rewards
+    })
