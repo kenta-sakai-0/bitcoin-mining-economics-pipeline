@@ -3,3 +3,8 @@ poetry.lock
 __pycache__
 *.egg-info/
 *.venv
+
+# dbt
+**/analytics/logs/
+**/analytics/target/
+**/analytics/dbt_packages/

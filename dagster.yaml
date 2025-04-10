@@ -24,8 +24,9 @@ run_launcher:
       - DAGSTER_POSTGRES_PASSWORD
       - DAGSTER_POSTGRES_DB
       - GOOGLE_APPLICATION_CREDENTIALS
-      - BITCOIN_MINING_BUCKET_NAME
+      - FINNHUB_API_KEY
       - GCP_PROJECT_ID
+      - DBT_DATASET_NAME
     network: bitcoin_mining_economics_network
     container_kwargs:
       auto_remove: True
@@ -76,3 +77,7 @@ event_log_storage:
       db_name:
         env: DAGSTER_POSTGRES_DB
       port: 5432
+
+run_retries:
+  enabled: true # Omit this key if using Dagster+, since run retries are enabled by default
+  max_retries: 3

@@ -15,7 +15,10 @@ dependencies = [
     "pytest==8.3.5",
     "dagster-docker (==0.26.2)",
     "dagster-postgres (==0.26.2)",
-    "kagglehub (>=0.3.10,<0.4.0)"
+    "kagglehub (>=0.3.10,<0.4.0)",
+    "finnhub-python (>=2.4.23,<3.0.0)",
+    "dagster-dbt (==0.26.2)",
+    "dbt-bigquery (>=1.9.1,<2.0.0)"
 ]
 
 [build-system]

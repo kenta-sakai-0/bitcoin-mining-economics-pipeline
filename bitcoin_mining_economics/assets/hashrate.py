@@ -34,7 +34,7 @@ def btc_hashrate_file(gcs:GCSResource):
     )
 
     gcs_client = gcs.get_client()
-    bucket = gcs_client.bucket(EnvVar("BITCOIN_MINING_BUCKET_NAME").get_value())
+    bucket = gcs_client.bucket(constants.BITCOIN_MINING_BUCKET_NAME)
     
     blob = bucket.blob(constants.GCS_BTC_HASHRATE_FILE_PATH.format(datetime.now().strftime("%Y-%m-%d")))
     blob.upload_from_filename(constants.LOCAL_HASHRATE_FILE_PATH)
@@ -45,7 +45,7 @@ def btc_hashrate_file(gcs:GCSResource):
 )
 def btc_hashrate(bq:BigQueryResource):
     """
-        The dataset for bitcoin hashrate. Daily resolution
+        Dataset for bitcoin hashrate. Daily resolution
     """
 
     # Construct a BigQuery client object.
@@ -58,16 +58,20 @@ def btc_hashrate(bq:BigQueryResource):
         )
 
         table_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_BTC_DATASET_NAME}.{constants.BQ_BTC_HASHRATE_TABLE_NAME}"
-        uri = f"gs://{constants.GCS_BTC_BUCKET_NAME}/{constants.GCS_BTC_HASHRATE_FILE_PATH}"
+        uri = f"gs://{constants.GCS_BUCKET_NAME}/{constants.GCS_BTC_HASHRATE_FILE_PATH}"
 
         load_job = bq_client.load_table_from_uri(uri, table_id, job_config=job_config)
         load_job.result()
     
     os.remove(constants.LOCAL_HASHRATE_FILE_PATH)
 
-
-def block_reward():
-    # Start date (Bitcoin genesis block)
+@asset(
+    group_name='btc'
+)
+def block_reward_file(gcs:GCSResource):
+    """
+        Raw csv for block reward.
+    """
     start_date = datetime(2009, 1, 3)
     
     # Halving dates
@@ -107,3 +111,41 @@ def block_reward():
         'date': dates,
         'block_reward': block_rewards
     })
+    
+    df.to_csv(
+        constants.LOCAL_BLOCK_REWARD_FILE_PATH,
+        index=False
+    )
+
+    gcs_client = gcs.get_client()
+    bucket = gcs_client.bucket(constants.GCS_BUCKET_NAME)
+    
+    blob = bucket.blob(constants.GCS_BLOCK_REWARD_FILE_PATH)
+    blob.upload_from_filename(constants.LOCAL_BLOCK_REWARD_FILE_PATH)
+    os.remove(constants.LOCAL_BLOCK_REWARD_FILE_PATH)
+
+@asset(
+    deps=['block_reward_file'],
+    group_name='btc'
+)
+def block_reward(bq:BigQueryResource):
+    """
+        Dataset for block reward
+    """
+
+    # Construct a BigQuery client object.
+    with bq.get_client() as bq_client:
+
+        job_config = bigquery.LoadJobConfig(
+            autodetect=True, 
+            skip_leading_rows=1,
+            source_format=bigquery.SourceFormat.CSV,
+        )
+
+        table_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_BTC_DATASET_NAME}.{constants.BQ_BLOCK_REWARD_TABLE_NAME}"
+        uri = f"gs://{constants.GCS_BUCKET_NAME}/{constants.GCS_BLOCK_REWARD_FILE_PATH}"
+
+        load_job = bq_client.load_table_from_uri(uri, table_id, job_config=job_config)
+        load_job.result()
+    
+    

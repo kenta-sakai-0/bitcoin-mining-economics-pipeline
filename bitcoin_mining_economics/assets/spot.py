@@ -28,7 +28,7 @@ def btcusd_file(gcs:GCSResource):
     )
 
     gcs_client = gcs.get_client()
-    bucket = gcs_client.bucket(constants.GCS_BTC_BUCKET_NAME)    
+    bucket = gcs_client.bucket(constants.GCS_BUCKET_NAME)    
     blob = bucket.blob(constants.GCS_BTCUSD_FILE_PATH)
     blob.upload_from_filename(filepath)
 
@@ -54,7 +54,7 @@ def btcusd(bq:BigQueryResource):
         )
         
         table_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_BTC_DATASET_NAME}.{constants.BQ_BTCUSD_TABLE_NAME}"
-        uri = f"gs://{constants.GCS_BTC_BUCKET_NAME}/{constants.GCS_BTCUSD_FILE_PATH}"
+        uri = f"gs://{constants.GCS_BUCKET_NAME}/{constants.GCS_BTCUSD_FILE_PATH}"
 
         load_job = bq_client.load_table_from_uri(uri, table_id, job_config=job_config)
         load_job.result() 
