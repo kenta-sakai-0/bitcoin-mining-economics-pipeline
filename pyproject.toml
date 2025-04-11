@@ -18,7 +18,8 @@ dependencies = [
     "kagglehub (>=0.3.10,<0.4.0)",
     "finnhub-python (>=2.4.23,<3.0.0)",
     "dagster-dbt (==0.26.2)",
-    "dbt-bigquery (>=1.9.1,<2.0.0)"
+    "dbt-bigquery (>=1.9.1,<2.0.0)",
+    "yfinance (>=0.2.55,<0.3.0)"
 ]
 
 [build-system]

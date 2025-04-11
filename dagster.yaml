@@ -27,6 +27,7 @@ run_launcher:
       - FINNHUB_API_KEY
       - GCP_PROJECT_ID
       - DBT_DATASET_NAME
+      - FMP_API_KEY
     network: bitcoin_mining_economics_network
     container_kwargs:
       auto_remove: True
