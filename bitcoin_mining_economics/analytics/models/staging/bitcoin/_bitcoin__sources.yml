@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: btc_src
+    database:   
+    schema: btc_src
+    tables:
+      - name: btcusd_src
+      - name: hashrate_src
+      - name: block_reward_src
