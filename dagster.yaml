@@ -26,8 +26,8 @@ run_launcher:
       - GOOGLE_APPLICATION_CREDENTIALS
       - FINNHUB_API_KEY
       - GCP_PROJECT_ID
-      - DBT_DATASET_NAME
       - FMP_API_KEY
+      - DBT_DATASET_NAME
     network: bitcoin_mining_economics_network
     container_kwargs:
       auto_remove: True
