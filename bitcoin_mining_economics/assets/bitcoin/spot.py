@@ -8,8 +8,10 @@ import kagglehub
 import shutil
 
 import importlib 
-from assets import constants
+from assets.bitcoin import constants
 importlib.reload(constants)
+import project_constants
+importlib.reload(project_constants) 
 
 @asset(
     group_name='btc'
@@ -28,7 +30,7 @@ def btcusd_file(gcs:GCSResource):
     )
 
     gcs_client = gcs.get_client()
-    bucket = gcs_client.bucket(constants.GCS_BUCKET_NAME)    
+    bucket = gcs_client.bucket(project_constants.GCS_BUCKET_NAME)    
     blob = bucket.blob(constants.GCS_BTCUSD_FILE_PATH)
     blob.upload_from_filename(filepath)
 
@@ -38,7 +40,7 @@ def btcusd_file(gcs:GCSResource):
     deps=["btcusd_file"],
     group_name="btc"
 )
-def btcusd(bq:BigQueryResource):
+def btcusd_src(bq:BigQueryResource):
     """
         Dataset for BTCUSD.
     """
@@ -53,8 +55,8 @@ def btcusd(bq:BigQueryResource):
             source_format=bigquery.SourceFormat.CSV,
         )
         
-        table_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_BTC_DATASET_NAME}.{constants.BQ_BTCUSD_TABLE_NAME}"
-        uri = f"gs://{constants.GCS_BUCKET_NAME}/{constants.GCS_BTCUSD_FILE_PATH}"
+        table_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_DATASET_NAME__BTC_SRC}.{constants.BQ_TABLE_NAME__BTCUSD_SRC}"
+        uri = f"gs://{project_constants.GCS_BUCKET_NAME}/{constants.GCS_BTCUSD_FILE_PATH}"
 
         load_job = bq_client.load_table_from_uri(uri, table_id, job_config=job_config)
         load_job.result() 

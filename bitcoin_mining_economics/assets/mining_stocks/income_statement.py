@@ -1,17 +1,14 @@
 from dagster import asset, EnvVar
 from dagster_gcp import GCSResource, BigQueryResource
 
-import os
 import json
 import requests
 from datetime import datetime 
-import shutil
-import pandas as pd
 
 import importlib 
 from assets.mining_stocks import constants
-from assets.constants import GCS_BUCKET_NAME
-importlib.reload(constants)
+import project_constants
+importlib.reload(project_constants) 
 
 @asset(
     group_name='mining_stocks'
@@ -20,16 +17,12 @@ def income_statement_annual__files(gcs:GCSResource):
     """
         Source: FMP
     """
-
-    fetch_date = datetime.today().strftime('%Y-%m-%d')
     
-    # Create temporary local income_statement folder
-    local_income_statement_folder_path = constants.LOCAL_INCOME_STATEMENT_FOLDER_PATH.format(fetch_date=fetch_date) 
-    os.makedirs(local_income_statement_folder_path, exist_ok=True) 
+    fetch_date = datetime.today().strftime('%Y-%m-%d')
     
     # Init GCS client
     gcs_client = gcs.get_client()
-    bucket = gcs_client.bucket(GCS_BUCKET_NAME)
+    bucket = gcs_client.bucket(project_constants.GCS_BUCKET_NAME)
 
     for ticker in constants.TICKER_LIST:
 
@@ -41,7 +34,7 @@ def income_statement_annual__files(gcs:GCSResource):
         ndjson = "\n".join(json.dumps(record) for record in response.json())
         
         # Prep GCS
-        gcs_file_path = constants.GCS_FILE_PATH_TEMPLATE__INCOME_STATEMENT.format(
+        gcs_file_path = constants.GCS_FILE_PATH_TEMPLATE__INCOME_STATEMENT_ANNUAL.format(
             fetch_date=fetch_date,
             ticker=ticker
         )
@@ -57,14 +50,23 @@ def income_statement_annual__files(gcs:GCSResource):
     group_name='mining_stocks',
     deps=['income_statement_annual__files']
 )
-def income_statement_annual__temp(bq:BigQueryResource):
+def income_statement_annual__src(bq:BigQueryResource):
     """
         External table for annual income statements
     """
 
+    # Create dataset if not exists
+    with bq.get_client() as bq_client:        
+        dataset_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_DATASET_NAME__FUNDAMENTALS_SRC}"
+        bq_client.create_dataset(dataset_id, exists_ok=True,)
+
+
     fetch_date = datetime.today().strftime('%Y-%m-%d')
+    temp_table_id = f"{constants.BQ_DATASET_NAME__FUNDAMENTALS_SRC}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__TEMP}"
+    source_table_id = f"{constants.BQ_DATASET_NAME__FUNDAMENTALS_SRC}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__SOURCE}"
+
     query = f"""
-        CREATE OR REPLACE EXTERNAL TABLE `{EnvVar('DBT_DATASET_NAME').get_value()}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__TEMP}`
+        CREATE OR REPLACE EXTERNAL TABLE `{temp_table_id}`
             (
             date DATE,
             symbol STRING,
@@ -106,29 +108,10 @@ def income_statement_annual__temp(bq:BigQueryResource):
             finalLink STRING
         )
         OPTIONS (
-        format = 'JSON',
-        uris = ['gs://bitcoin-mining-economics/{constants.GCS_FILE_PATH_TEMPLATE__INCOME_STATEMENT.format(fetch_date=fetch_date, ticker='*')}']
+            format = 'JSON',
+            uris = ['gs://{project_constants.GCS_BUCKET_NAME}/{constants.GCS_FILE_PATH_TEMPLATE__INCOME_STATEMENT_ANNUAL.format(fetch_date=fetch_date, ticker='*')}']
         );
-    """
 
-    with bq.get_client() as bq_client:
-        query_job = bq_client.query(query)
-        query_job.result()
-
-@asset(
-    group_name='mining_stocks',
-    deps=['income_statement_annual__temp']
-)
-def income_statement_annual__source(bq:BigQueryResource):
-    """
-        Source table for annual income statement
-    """
-
-    source_table_id = f"{EnvVar('DBT_DATASET_NAME').get_value()}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__SOURCE}"
-    temp_table_id = f"{EnvVar('DBT_DATASET_NAME').get_value()}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__TEMP}"
-
-    query = f"""
-        # Create source table if it doen't exist
         CREATE TABLE IF NOT EXISTS {source_table_id} AS (
             SELECT * FROM {temp_table_id}
         );
@@ -141,6 +124,8 @@ def income_statement_annual__source(bq:BigQueryResource):
             FROM {source_table_id} s
             WHERE s.symbol = t.symbol AND s.date = t.date
         );
+
+        DROP TABLE {temp_table_id}
     """
 
     with bq.get_client() as bq_client:
