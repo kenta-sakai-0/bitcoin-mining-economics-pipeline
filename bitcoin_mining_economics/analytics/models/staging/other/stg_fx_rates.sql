@@ -1,0 +1,1 @@
+SELECT * FROM {{source('other_src', 'fx_rates_src')}}

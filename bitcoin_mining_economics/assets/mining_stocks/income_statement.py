@@ -58,8 +58,7 @@ def income_statement_annual__src(bq:BigQueryResource):
     # Create dataset if not exists
     with bq.get_client() as bq_client:        
         dataset_id = f"{EnvVar('GCP_PROJECT_ID').get_value()}.{constants.BQ_DATASET_NAME__FUNDAMENTALS_SRC}"
-        bq_client.create_dataset(dataset_id, exists_ok=True,)
-
+        bq_client.create_dataset(dataset_id, exists_ok=True)
 
     fetch_date = datetime.today().strftime('%Y-%m-%d')
     temp_table_id = f"{constants.BQ_DATASET_NAME__FUNDAMENTALS_SRC}.{constants.BQ_TABLE_NAME__INCOME_STATEMENTS_ANNUAL__TEMP}"

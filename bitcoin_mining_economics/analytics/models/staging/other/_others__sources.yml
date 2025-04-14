@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: other_src
+    database:   
+    schema: other_src
+    tables:
+      - name: fx_rates_src

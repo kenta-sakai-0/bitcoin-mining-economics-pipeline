@@ -32,11 +32,25 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   analytics:
+
     staging:
+      +materialized: view
       bitcoin:
-        materialized: view
-        schema: btc_stg
+        +schema: btc_stg
+      other:
+        +schema: other_stg
+      mining_stocks:
+        +schema: mining_stocks_fundamentals_stg
+
+    intermediate:
+      +materialized: table
+      bitcoin:
+        +schema: btc_int
+      mining_stocks:
+        +schema: mining_stocks_fundamentals_int
+
     marts:
+      +materialized: table
       bitcoin:
-        materialized: table
-        schema: bitcoin
+        +schema: bitcoin
+    

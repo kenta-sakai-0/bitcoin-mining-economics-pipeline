@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: mining_stocks_fundamentals_src
+    database:   
+    schema: mining_stocks_fundamentals_src
+    tables:
+      - name: balance_sheet_annual_src
+      - name: income_statement_annual_src

@@ -45,7 +45,7 @@ def btc_hashrate_file(gcs:GCSResource):
     deps=["btc_hashrate_file"],
     group_name="btc"
 )
-def btc_hashrate_src(bq:BigQueryResource):
+def hashrate_src(bq:BigQueryResource):
     """
         Dataset for bitcoin hashrate. Daily resolution
     """

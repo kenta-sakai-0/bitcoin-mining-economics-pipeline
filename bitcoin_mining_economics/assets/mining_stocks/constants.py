@@ -9,7 +9,7 @@ GCS_FILE_PATH_TEMPLATE__BALANCE_SHEET_ANNUAL = 'mining_stocks/balance_sheet/annu
 BQ_TABLE_NAME__BALANCE_SHEETS_ANNUAL__TEMP = 'balance_sheet_annual_temp'
 BQ_TABLE_NAME__BALANCE_SHEETS__ANNUAL__SOURCE = 'balance_sheet_annual_src'
 
-BQ_DATASET_NAME__FUNDAMENTALS_SRC = 'fundamentals_src'
+BQ_DATASET_NAME__FUNDAMENTALS_SRC = 'mining_stocks_fundamentals_src'
 
 TICKER_LIST = [
     'IREN',

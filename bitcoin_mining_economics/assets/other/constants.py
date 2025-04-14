@@ -1,0 +1,2 @@
+BQ_DATASET_NAME__OTHER_SRC = 'other_src'
+BQ_DATASET_NAME__OTHER_STG = 'other_int'
