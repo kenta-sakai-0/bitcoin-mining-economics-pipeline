@@ -72,4 +72,4 @@ See the [open issues](https://github.com/othneildrew/Best-README-Template/issues
 [Python-shield]: https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff
 [Dagster-shield]: https://img.shields.io/badge/Dagster-Orchestration-blue?logo=dagster
 [dbt-shield]: https://img.shields.io/badge/DBT-Analytics%20Engineering-ff694f?logo=dbt
-[Docker-shield]: https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)
+[Docker-shield]: https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff
